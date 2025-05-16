@@ -80,10 +80,19 @@ namespace ulesanne1605_poko.Controllers
         [ValidateAntiForgeryToken]
         [HttpPost]
         public IActionResult Delete(Country country)
-        {
-            _context.Attach(country);
-            _context.Entry(country).State = EntityState.Deleted;
-            _context.SaveChanges();
+        { try
+            {
+                _context.Attach(country);
+                _context.Entry(country).State = EntityState.Deleted;
+                _context.SaveChanges();
+
+            }
+            catch (Exception ex)
+            {
+                _context.Entry(country).Reload();
+                ModelState.AddModelError("", ex.InnerException.Message);
+                return View(country);
+            }
             return RedirectToAction(nameof(Index));
         }
     }
