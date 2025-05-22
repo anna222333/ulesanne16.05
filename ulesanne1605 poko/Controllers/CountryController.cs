@@ -80,17 +80,25 @@ namespace ulesanne1605_poko.Controllers
         [ValidateAntiForgeryToken]
         [HttpPost]
         public IActionResult Delete(Country country)
-        { try
+        {
+            // Проверяем, есть ли связанные города
+            var hasCities = _context.Cities.Any(c => c.CountryId == country.Id);
+            if (hasCities)
+            {
+                ModelState.AddModelError("", "Нельзя удалить страну, у которой есть города.");
+                return View(country);
+            }
+
+            try
             {
                 _context.Attach(country);
                 _context.Entry(country).State = EntityState.Deleted;
                 _context.SaveChanges();
-
             }
             catch (Exception ex)
             {
                 _context.Entry(country).Reload();
-                ModelState.AddModelError("", ex.InnerException.Message);
+                ModelState.AddModelError("", ex.InnerException?.Message ?? ex.Message);
                 return View(country);
             }
             return RedirectToAction(nameof(Index));

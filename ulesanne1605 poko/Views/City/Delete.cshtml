@@ -24,6 +24,11 @@
             @Html.DisplayFor(model => model.Country.Code)
         </dd>
     </dl>
+
+    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+    {
+        <div class="alert alert-danger">@error.ErrorMessage</div>
+    }
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
