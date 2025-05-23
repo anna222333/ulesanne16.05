@@ -18,7 +18,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.City)
             </th>
-           
+            <th>
+               Photo
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.PhotoUrl)
             </th>
@@ -41,6 +43,13 @@
             <td>
                 @Html.DisplayFor(modelItem => item.City.Code)
             </td>
+                <td>
+                    <img src="@(string.IsNullOrEmpty(item.PhotoUrl)
+            ? Url.Content("~/images/noimage.png")
+            : Url.Content("~/images/" + item.PhotoUrl))"
+                         alt="Photo"
+                         width="60" height="60" style="object-fit:cover; border-radius:50%;" />
+                </td>
             <td>
                 @Html.DisplayFor(modelItem => item.PhotoUrl)
             </td>

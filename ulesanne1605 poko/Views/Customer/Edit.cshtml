@@ -31,7 +31,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit" enctype="multipart/form-data">
+        <form asp-action="Edit" enctype="multipart/form-data" id="editForm">
             <input type="hidden" asp-for ="Id"/>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -67,34 +67,37 @@
 
 
 
+      
+
             <div class="col-md-12 btn-group pb-2">
                 <div class="form-group col-4 p-0">
-                    <label asp-for="ProfilePhoto" class="control-label"></label>
-                    <img id="PreviewPhoto" src="~/images/noimage.png" alt="Logo Image" width="125" height="125" />
+                  
+                    <div class="form-group col-4 p-0">
+                        <label asp-for="ProfilePhoto" class="control-label"></label>
+                        <img id="PreviewPhoto"
+                             src="@(string.IsNullOrEmpty(Model.PhotoUrl) ? Url.Content("~/images/noimage.png") : Url.Content("~/images/" + Model.PhotoUrl))"
+                             alt="Customer Photo"
+                             class="img-fluid rounded" style="max-width: 125px;" />
+                        <span asp-validation-for="PhotoUrl" class="text-danger"></span>
+                    </div>
                     <span asp-validation-for="PhotoUrl" class="text-danger"></span>
-                </div>
-                <div class="col-1 p-0">
-                    <!-- Пустой div для отступа или выравнивания -->
                 </div>
                 <div class="form-group col-7 p-0">
                     <div class="input-group custom-file-button mt-5 pt-5">
-                        <input asp-for="ProfilePhoto" class="form-control custom-file-input" id="customFile" />
+                        <input asp-for="ProfilePhoto" type="file"  class="form-control custom-file-input" id="customFile" />
                         <label class="input-group-text" for="customFile">Browse</label>
                     </div>
                 </div>
-            </div>
-
-
             <div class="form-group">
                 <input type="submit" value="Edit" class="btn btn-primary" />
             </div>
 
-            <div class="form-group pt-0 mt-0">
-                <div ID="HiddenDiv" style="visibility: hidden;">
-                    <input asp-for="PhotoUrl" id="PhotoUrl" value="" />
-                </div>
-            </div>
 
+                <div class="form-group pt-0 mt-0">
+                    <div ID="HiddenDiv" style="visibility: hidden;">
+                        <input asp-for="PhotoUrl" id="PhotoUrl" value="" />
+                    </div>
+                </div>
 
 
 
@@ -111,7 +114,16 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script type="text/javascript">
-       
+
+               document.getElementById("editForm").addEventListener("submit", function (e) {
+            var fileInput = document.getElementById('customFile');
+            if (fileInput && fileInput.files.length === 0) {
+                var confirmed = confirm("Are you sure you want to create a profile without a photo?");
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            }
+        });
 
 
 

@@ -33,14 +33,20 @@ namespace ulesanne1605_poko.Controllers
 
             return View(Customer);
         }
-
         [ValidateAntiForgeryToken]
         [HttpPost]
         public IActionResult Create(Customer customer)
         {
-            string iniqueFileName = GetProfilePhotoFileName(customer);
-            customer.PhotoUrl = iniqueFileName;
-            
+            if (customer.ProfilePhoto != null)
+            {
+                string uniqueFileName = GetProfilePhotoFileName(customer);
+                customer.PhotoUrl = uniqueFileName;
+            }
+            else
+            {
+                customer.PhotoUrl = "noimage.png";
+            }
+
             _context.Add(customer);
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
@@ -61,7 +67,7 @@ namespace ulesanne1605_poko.Controllers
         [HttpGet]
         public IActionResult Edit(int Id)
         {
-          
+
 
             Customer customer = _context.Customers
             .Include(co => co.City)
@@ -75,6 +81,10 @@ namespace ulesanne1605_poko.Controllers
             return View(customer);
         }
 
+       
+       
+        
+       
         [ValidateAntiForgeryToken]
         [HttpPost]
         public IActionResult Edit(Customer customer)
@@ -86,12 +96,17 @@ namespace ulesanne1605_poko.Controllers
                 customer.PhotoUrl = uniqueFileName;
 
             }
+            else
+            {
+                customer.PhotoUrl = "noimage.png";
+            }
 
             _context.Attach(customer);
             _context.Entry(customer).State = EntityState.Modified;
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
+
 
         [HttpGet]
         public IActionResult Delete(int id)
