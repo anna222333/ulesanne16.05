@@ -19,7 +19,7 @@
     [Required]
     [DisplayName("Country")]
     [NotMapped]
-    public int CounryId { get; set; }
+    public int CountryId { get; set; }
 
     [Required]
     [ForeignKey("City")]
@@ -30,4 +30,8 @@
     [Required(ErrorMessage = "Please choose the Customer Photo")]
     [MaxLength(500)]
     public string PhotoUrl { get; set; }
+
+    [NotMapped]
+    public IFormFile ProfilePhoto { get; set; }
+
 }
