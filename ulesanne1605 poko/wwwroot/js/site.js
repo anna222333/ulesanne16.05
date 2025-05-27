@@ -28,7 +28,54 @@ function FillCities(lstCountryCtrl, lstCityId) {
 }
 
 $(".custom-file-input").on("change", function () {
-    var fileName = $(this).val().split("\\").pop(); // Получаем имя файла
-    document.getElementById('PreviewPhoto').src = window.URL.createObjectURL(this.files[0]); // Обновляем превью изображения
-    document.getElementById('PhotoUrl').value = fileName; // Устанавливаем значение в скрытое поле
+    var fileName = $(this).val().split("\\").pop(); 
+    document.getElementById('PreviewPhoto').src = window.URL.createObjectURL(this.files[0]);
+    document.getElementById('PhotoUrl').value = fileName;
+});
+
+
+document.getElementById('addCountryForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('newCountryName').value;
+    fetch('/Country/CreateFromModal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Name: name })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.id) {
+               
+                var select = document.querySelector('select[name="CountryId"]');
+                var option = new Option(data.name, data.id, true, true);
+                select.add(option);
+              
+                var modal = bootstrap.Modal.getInstance(document.getElementById('addCountryModal'));
+                modal.hide();
+            }
+        });
+});
+
+
+document.getElementById('addCityForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('newCityName').value;
+    var countryId = document.getElementById('newCityCountryId').value;
+    fetch('/City/CreateFromModal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Name: name, CountryId: countryId })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.id) {
+               
+                var select = document.querySelector('select[name="CityId"]');
+                var option = new Option(data.name, data.id, true, true);
+                select.add(option);
+                
+                var modal = bootstrap.Modal.getInstance(document.getElementById('addCityModal'));
+                modal.hide();
+            }
+        });
 });

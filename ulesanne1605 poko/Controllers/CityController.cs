@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using ulesanne1605_poko.Models;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace ulesanne1605_poko.Controllers
@@ -32,6 +33,12 @@ namespace ulesanne1605_poko.Controllers
         [HttpPost]
         public IActionResult Create(City City)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Countries = GetCountries();
+                return View(City);
+            }
+
 
             _context.Add(City);
             _context.SaveChanges();
@@ -47,6 +54,11 @@ namespace ulesanne1605_poko.Controllers
         {
             City City = _context.Cities
             .Where(c => c.Id == Id).FirstOrDefault();
+            ViewBag.Countries = GetCountries();
+            ViewBag.Cities = _context.Cities
+    .Where(c => c.CountryId == City.CountryId)  // или все города, если хочешь
+    .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
+    .ToList();
             return View(City);
         }
 
@@ -57,12 +69,22 @@ namespace ulesanne1605_poko.Controllers
             City City = _context.Cities
                 .Where(c => c.Id == Id).FirstOrDefault();
             ViewBag.Countries = GetCountries();
+            ViewBag.Cities = _context.Cities
+    .Where(c => c.CountryId == City.CountryId)  // или все города, если хочешь
+    .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
+    .ToList();
             return View(City);
         }
         [ValidateAntiForgeryToken]
         [HttpPost]
         public IActionResult Edit(City City)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Countries = GetCountries();
+                return View(City);
+            }
+
             _context.Attach(City);
             _context.Entry(City).State = EntityState.Modified;
             _context.SaveChanges();
@@ -85,6 +107,26 @@ namespace ulesanne1605_poko.Controllers
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public JsonResult CreateFromModal([FromBody] City city)
+        {
+            if (string.IsNullOrWhiteSpace(city.Name) ||
+                string.IsNullOrWhiteSpace(city.Code) ||
+                city.CountryId == 0)
+            {
+                Response.StatusCode = 400;
+                return Json(new { error = "Name, Code и CountryId обязательны" });
+            }
+
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+            return Json(new { id = city.Id, name = city.Name });
+        }
+
 
 
         private List<SelectListItem> GetCountries()

@@ -2,105 +2,149 @@
 
 @{
     ViewData["Title"] = "Edit";
-
 }
 
 <style>
-    .custom-file-button input[type=file] {
-        margin-left: -2px !important;
+    .photo-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
-        .custom-file-button input[type=file]::-webkit-file-upload-button {
-            display: none;
+    #PreviewPhoto {
+        max-width: 150px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .photo-buttons {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+
+        .photo-buttons .btn {
+            min-width: 120px;
+            text-align: center;
         }
 
-        .custom-file-button input[type=file]::file-selector-button {
-            display: none;
-        }
-
-    .custom-file-button:hover label {
-        background-color: #dde0e3;
-        cursor: pointer;
+    .save-button {
+        width: 100%;
     }
 </style>
 
-
 <h1>Edit</h1>
-
 <h4>Customer</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit" enctype="multipart/form-data" id="editForm">
-            <input type="hidden" asp-for ="Id"/>
+        <form asp-action="Edit" method="post" enctype="multipart/form-data" id="editForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="PhotoUrl" />
+            <input type="hidden" name="removePhoto" id="removePhoto" value="false" />
+            <input type="hidden" id="ExistingPhotoUrl" value="@Model.PhotoUrl" />
+
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <div class="form-group">
                 <label asp-for="FirstName" class="control-label"></label>
                 <input asp-for="FirstName" class="form-control" />
                 <span asp-validation-for="FirstName" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="LastName" class="control-label"></label>
                 <input asp-for="LastName" class="form-control" />
                 <span asp-validation-for="LastName" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="EmailId" class="control-label"></label>
                 <input asp-for="EmailId" class="form-control" />
                 <span asp-validation-for="EmailId" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="CountryId" class="control-label"></label>
-                <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries" onchange="FillCities(this, 'lstCity');"></select>
+            <div class="input-group">
+                <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries"></select>
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addCountryModal">+</button>
             </div>
-            <div class="form-group">
-                <label asp-for="CityId" class="control-label"></label>
-                <select id="lstCity" asp-for="CityId" class="form-control" asp-items="ViewBag.Cities"></select>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="PhotoUrl" class="control-label"></label>
-                <input asp-for="PhotoUrl" class="form-control" />
-                <span asp-validation-for="PhotoUrl" class="text-danger"></span>
+            <div class="input-group mt-2">
+                <select asp-for="CityId" class="form-control" asp-items="ViewBag.Cities"></select>
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addCityModal">+</button>
             </div>
 
+            <div class="form-group photo-section mt-3">
+                <label class="form-label">Current Photo</label>
+                <img id="PreviewPhoto"
+                     src="@(string.IsNullOrEmpty(Model.PhotoUrl) ? Url.Content("~/images/noimage.png") : Url.Content("~/images/" + Model.PhotoUrl))"
+                     alt="Customer Photo"
+                     class="img-fluid" />
 
+                <div class="photo-buttons mt-2">
+                    <label class="btn btn-secondary m-0">
+                        Upload
+                        <input asp-for="ProfilePhoto" type="file" id="customFile" hidden />
+                    </label>
 
-      
-
-            <div class="col-md-12 btn-group pb-2">
-                <div class="form-group col-4 p-0">
-                  
-                    <div class="form-group col-4 p-0">
-                        <label asp-for="ProfilePhoto" class="control-label"></label>
-                        <img id="PreviewPhoto"
-                             src="@(string.IsNullOrEmpty(Model.PhotoUrl) ? Url.Content("~/images/noimage.png") : Url.Content("~/images/" + Model.PhotoUrl))"
-                             alt="Customer Photo"
-                             class="img-fluid rounded" style="max-width: 125px;" />
-                        <span asp-validation-for="PhotoUrl" class="text-danger"></span>
-                    </div>
-                    <span asp-validation-for="PhotoUrl" class="text-danger"></span>
-                </div>
-                <div class="form-group col-7 p-0">
-                    <div class="input-group custom-file-button mt-5 pt-5">
-                        <input asp-for="ProfilePhoto" type="file"  class="form-control custom-file-input" id="customFile" />
-                        <label class="input-group-text" for="customFile">Browse</label>
-                    </div>
-                </div>
-            <div class="form-group">
-                <input type="submit" value="Edit" class="btn btn-primary" />
-            </div>
-
-
-                <div class="form-group pt-0 mt-0">
-                    <div ID="HiddenDiv" style="visibility: hidden;">
-                        <input asp-for="PhotoUrl" id="PhotoUrl" value="" />
-                    </div>
+                    <button type="button" class="btn btn-danger" id="btnRemovePhoto">Remove</button>
                 </div>
 
+                <div class="save-button mt-3">
+                    <input type="submit" value="Save" class="btn btn-primary w-100" />
+                </div>
+            </div>
 
+            <!-- Country Modal -->
+            <div class="modal fade" id="addCountryModal" tabindex="-1" aria-labelledby="addCountryModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form id="addCountryForm">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addCountryModalLabel">Add country</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" class="form-control mb-2" id="newCountryName" placeholder="Country name" required />
+                                <input type="text" class="form-control mb-2" id="newCountryCode" placeholder="Code" maxlength="3" required />
+                                <input type="text" class="form-control" id="newCountryCurrency" placeholder="Currency" maxlength="75" />
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
+            <!-- City Modal -->
+            <div class="modal fade" id="addCityModal" tabindex="-1" aria-labelledby="addCityModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form id="addCityForm">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addCityModalLabel">Add city</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" class="form-control mb-2" id="newCityName" placeholder="City name" required />
+                                <input type="text" class="form-control mb-2" id="newCityCode" placeholder="Code" maxlength="3" required />
+                                <select class="form-control mt-2" id="newCityCountryId">
+                                    @foreach (var country in ViewBag.Countries as List<SelectListItem>)
+                                    {
+                                        <option value="@country.Value">@country.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
         </form>
     </div>
@@ -111,22 +155,122 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 
-    <script type="text/javascript">
+    <script>
+           
+        document.querySelector('select[name="CountryId"]').addEventListener('change', function () {
+            var countryId = this.value;
+            var citySelect = document.querySelector('select[name="CityId"]');
 
-               document.getElementById("editForm").addEventListener("submit", function (e) {
+            // Очистка списка городов
+            citySelect.innerHTML = '';
+
+            if (countryId) {
+                fetch(`/Customer/GetCitiesByCountry?countryId=${countryId}`)
+                    .then(response => response.json())
+                    .then(cities => {
+                        let defaultOption = document.createElement('option');
+                        defaultOption.text = '--- Select City ---';
+                        defaultOption.value = '';
+                        citySelect.add(defaultOption);
+
+                        cities.forEach(function (city) {
+                            let option = document.createElement('option');
+                            option.text = city.text;
+                            option.value = city.value;
+                            citySelect.add(option);
+                        });
+                    });
+            }
+        });
+    
+
+
+        document.getElementById('customFile').addEventListener('change', function (event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('PreviewPhoto').src = e.target.result;
+                    document.getElementById('removePhoto').value = "false";
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        });
+
+        document.getElementById("btnRemovePhoto").addEventListener("click", function () {
+            if (confirm("Are you sure you want to remove the photo?")) {
+                document.getElementById("PreviewPhoto").src = "/images/noimage.png";
+                document.getElementById("removePhoto").value = "true";
+                document.getElementById("customFile").value = "";
+            }
+        });
+
+        document.getElementById("editForm").addEventListener("submit", function (e) {
             var fileInput = document.getElementById('customFile');
-            if (fileInput && fileInput.files.length === 0) {
-                var confirmed = confirm("Are you sure you want to create a profile without a photo?");
+            var existingPhotoUrl = document.getElementById('ExistingPhotoUrl').value;
+            var photoWasEmpty = !existingPhotoUrl || existingPhotoUrl.endsWith("noimage.png");
+            var newPhotoNotChosen = fileInput && fileInput.files.length === 0;
+
+            if (photoWasEmpty && newPhotoNotChosen) {
+                var confirmed = confirm("Are you sure you want to save this profile without a photo?");
                 if (!confirmed) {
                     e.preventDefault();
                 }
             }
         });
 
+             document.getElementById('addCountryForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var name = document.getElementById('newCountryName').value;
+            var code = document.getElementById('newCountryCode').value;
+            var currency = document.getElementById('newCountryCurrency').value;
 
+            fetch('/Country/CreateFromModal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Name: name, Code: code, CurrencyName: currency })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Ошибка при создании страны");
+                return response.json();
+            })
+            .then(data => {
+                var select = document.querySelector('select[name="CountryId"]');
+                var option = new Option(data.name, data.id, true, true);
+                select.add(option);
+                var modal = bootstrap.Modal.getInstance(document.getElementById('addCountryModal'));
+                modal.hide();
+            })
+            .catch(error => alert(error.message));
+        });
+
+
+                document.getElementById('addCityForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var name = document.getElementById('newCityName').value;
+            var code = document.getElementById('newCityCode').value;
+            var countryId = document.getElementById('newCityCountryId').value;
+
+            fetch('/City/CreateFromModal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Name: name, Code: code, CountryId: countryId })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Ошибка при создании города");
+                return response.json();
+            })
+            .then(data => {
+                var select = document.querySelector('select[name="CityId"]');
+                var option = new Option(data.name, data.id, true, true);
+                select.add(option);
+                var modal = bootstrap.Modal.getInstance(document.getElementById('addCityModal'));
+                modal.hide();
+            })
+            .catch(error => alert(error.message));
+        });
 
     </script>
-
 }

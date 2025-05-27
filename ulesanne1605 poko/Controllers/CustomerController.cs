@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
-using static System.Net.Mime.MediaTypeNames;
+//using static System.Net.Mime.MediaTypeNames;
 
 namespace ulesanne1605_poko.Controllers
 {
@@ -21,36 +21,68 @@ namespace ulesanne1605_poko.Controllers
 
         public IActionResult Index()
         {
-            List<Customer> Cities;
-            Cities = _context.Customers.ToList();
-            return View(Cities);
+            List<Customer> customers = _context.Customers
+                 .Include(c => c.City)
+                .ThenInclude(city => city.Country)
+                .ToList();
+
+            return View(customers);
         }
+
         [HttpGet]
         public IActionResult Create()
         {
             Customer Customer = new Customer();
             ViewBag.Countries = GetCountries();
 
+            ViewBag.Cities = new List<SelectListItem>();
+
             return View(Customer);
         }
-        [ValidateAntiForgeryToken]
         [HttpPost]
-        public IActionResult Create(Customer customer)
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Customer customer, IFormFile ProfilePhoto)
         {
-            if (customer.ProfilePhoto != null)
+            if (!ModelState.IsValid)
             {
-                string uniqueFileName = GetProfilePhotoFileName(customer);
-                customer.PhotoUrl = uniqueFileName;
+                // если валидация не прошла — возвращаем список стран и городов (по выбранной стране)
+                ViewBag.Countries = GetCountries();
+                ViewBag.Cities = customer.CountryId > 0
+                    ? GetCities(customer.CountryId)
+                    : new List<SelectListItem>();
+                return View(customer);
+            }
+
+            // Обработка загруженного фото
+            if (ProfilePhoto != null && ProfilePhoto.Length > 0)
+            {
+                // Генерация уникального имени файла
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(ProfilePhoto.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Сохраняем файл
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    ProfilePhoto.CopyTo(fileStream);
+                }
+
+                // Устанавливаем путь к изображению в модель
+                customer.PhotoUrl = "/images/" + uniqueFileName;
             }
             else
             {
-                customer.PhotoUrl = "noimage.png";
+                // Если фото нет — задаём значение по умолчанию
+                customer.PhotoUrl = "/images/noimage.png";
             }
 
-            _context.Add(customer);
+            // Сохраняем клиента
+            _context.Customers.Add(customer);
             _context.SaveChanges();
+
             return RedirectToAction(nameof(Index));
         }
+
 
         [HttpGet]
         public IActionResult Details(int Id)
@@ -73,32 +105,49 @@ namespace ulesanne1605_poko.Controllers
             .Include(co => co.City)
                 .Where(c => c.Id == Id).FirstOrDefault();
 
-            customer.CountryId = customer.City.CountryId;
+            Console.WriteLine("PhotoUrl: " + customer.PhotoUrl);
+
+            if (customer.City != null)
+            {
+                customer.CountryId = customer.City.CountryId;
+            }
+
 
             ViewBag.Countries = GetCountries();
             ViewBag.Cities = GetCities(customer.CountryId);
 
+
+
             return View(customer);
         }
 
-       
-       
-        
-       
-        [ValidateAntiForgeryToken]
-        [HttpPost]
-        public IActionResult Edit(Customer customer)
-        {
-            if (customer.ProfilePhoto != null)
 
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Customer customer, bool removePhoto = false)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Countries = GetCountries();
+                ViewBag.Cities = customer.CountryId > 0 ? GetCities(customer.CountryId) : new List<SelectListItem>();
+                return View(customer);
+            }
+            if (removePhoto)
+            {
+                customer.PhotoUrl = "noimage.png";
+            }
+            else if (customer.ProfilePhoto != null)
             {
                 string uniqueFileName = GetProfilePhotoFileName(customer);
                 customer.PhotoUrl = uniqueFileName;
-
             }
             else
             {
-                customer.PhotoUrl = "noimage.png";
+                var existingCustomer = _context.Customers.AsNoTracking().FirstOrDefault(c => c.Id == customer.Id);
+                customer.PhotoUrl = existingCustomer?.PhotoUrl ?? "noimage.png";
             }
 
             _context.Attach(customer);
@@ -181,6 +230,7 @@ namespace ulesanne1605_poko.Controllers
             return uniqueFileName;
         }
 
+
         private List<SelectListItem> GetCities(int countryId)
         {
             List<SelectListItem> cities = _context.Cities
@@ -196,6 +246,7 @@ namespace ulesanne1605_poko.Controllers
             return cities;
         }
 
+        
 
     }
 }

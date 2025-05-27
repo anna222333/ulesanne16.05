@@ -49,13 +49,15 @@
                 <span asp-validation-for="EmailId" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="CountryId" class="control-label"></label>
-                <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries" onchange="FillCities(this, 'lstCity');"></select>
+        
+
+            <div class="input-group">
+                <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries"></select>
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addCountryModal">+</button>
             </div>
-            <div class="form-group">
-                <label asp-for="CityId" class="control-label"></label>
-                <select id="lstCity" asp-for="CityId" class="form-control" asp-items="ViewBag.Cities"></select>
+            <div class="input-group mt-2">
+                <select asp-for="CityId" class="form-control" asp-items="ViewBag.Cities"></select>
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addCityModal">+</button>
             </div>
 
             <div class="form-group">
@@ -95,7 +97,54 @@
 
 
 
+            <div class="modal fade" id="addCountryModal" tabindex="-1" aria-labelledby="addCountryModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form id="addCountryForm">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addCountryModalLabel">Add country</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" class="form-control mb-2" id="newCountryName" placeholder="Country name" required />
+                                <input type="text" class="form-control mb-2" id="newCountryCode" placeholder="Code" maxlength="3" required />
+                                <input type="text" class="form-control" id="newCountryCurrency" placeholder="Currency" maxlength="75" />
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
+
+            <div class="modal fade" id="addCityModal" tabindex="-1" aria-labelledby="addCityModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form id="addCityForm">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addCityModalLabel">Add city</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" class="form-control" id="newCityName" placeholder="City name" required />
+                                <input type="text" class="form-control mb-2" id="newCityCode" placeholder="Code" maxlength="3" required />
+
+                                <select class="form-control mt-2" id="newCityCountryId">
+                                    @foreach (var country in ViewBag.Countries as List<SelectListItem>)
+                                    {
+                                        <option value="@country.Value">@country.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
 </div>
@@ -117,6 +166,49 @@
                     e.preventDefault(); 
                 }
             }
+        });
+       
+                
+        document.getElementById('addCountryForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var name = document.getElementById('newCountryName').value;
+            var code = document.getElementById('newCountryCode').value;
+            var currency = document.getElementById('newCountryCurrency').value;
+            fetch('/Country/CreateFromModal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Name: name, Code: code, CurrencyName: currency })
+            })
+            .then(response => response.json())
+            .then(data => {
+               
+                var select = document.querySelector('select[name="CountryId"]');
+                var option = new Option(data.name, data.id, true, true);
+                select.add(option);
+                var modal = bootstrap.Modal.getInstance(document.getElementById('addCountryModal'));
+                modal.hide();
+            });
+        });
+
+        document.getElementById('addCityForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var name = document.getElementById('newCityName').value;
+            var code = document.getElementById('newCityCode').value;
+            var countryId = document.getElementById('newCityCountryId').value;
+            fetch('/City/CreateFromModal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Name: name, Code: code, CountryId: countryId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                
+                var select = document.querySelector('select[name="CityId"]');
+                var option = new Option(data.name, data.id, true, true);
+                select.add(option);
+                var modal = bootstrap.Modal.getInstance(document.getElementById('addCityModal'));
+                modal.hide();
+            });
         });
 
 

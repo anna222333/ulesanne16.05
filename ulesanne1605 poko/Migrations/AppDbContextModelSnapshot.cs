@@ -46,7 +46,7 @@ namespace ulesanne1605_poko.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.ToTable("Cities");
+                    b.ToTable("Cities", (string)null);
                 });
 
             modelBuilder.Entity("ulesanne1605_poko.Models.Country", b =>
@@ -73,7 +73,7 @@ namespace ulesanne1605_poko.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Countries");
+                    b.ToTable("Countries", (string)null);
                 });
 
             modelBuilder.Entity("ulesanne1605_poko.Models.Customer", b =>
@@ -111,7 +111,7 @@ namespace ulesanne1605_poko.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("ulesanne1605_poko.Models.City", b =>
