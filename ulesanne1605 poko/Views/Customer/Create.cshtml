@@ -56,9 +56,9 @@
                 onchange="FillCities(this, 'lstCity');"></select>
             </div>
             <div class="col-1 mt-4">
-                <button class="btn btn-success" onclick="ShowCountryCreateModal();">
-                    +
-                </button>
+               <button type="button" class="btn btn-success" onclick="ShowCountryCreateModal();">
+    +
+</button>
             </div>
             </div>
 
@@ -68,20 +68,16 @@
                 <select id="lstCity" asp-for="CityId" class="form-control" asp-items="ViewBag.Cities"></select>
             </div>
             <div class="col-1 mt-4">
-                 <button class="btn btn-success" onclick="ShowCityCreateModal();">
-                    +
-                </button>
+                 <button type="button" class="btn btn-success" onclick="ShowCityCreateModal();">
+    +
+</button>
                 </div>
  </div>
 
 
 
 
-            <div class="form-group">
-                <label asp-for="PhotoUrl" class="control-label"></label>
-                <input asp-for="PhotoUrl" class="form-control" />
-                <span asp-validation-for="PhotoUrl" class="text-danger"></span>
-            </div>
+         
 
             <div class="col-md-12 btn-group pb-2">
                 <div class="form-group col-4 p-0">
@@ -105,11 +101,7 @@
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
 
-            <div class="form-group pt-0 mt-0">
-                <div ID="HiddenDiv" style="visibility: hidden;">
-                    <input asp-for="PhotoUrl" id="PhotoUrl" value="" />
-                </div>
-            </div>
+          
 
 
 

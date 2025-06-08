@@ -21,9 +21,13 @@ namespace ulesanne1605_poko.Controllers
 
         public IActionResult Index()
         {
-            List<Customer> Cities;
-            Cities = _context.Customers.ToList();
-            return View(Cities);
+            var customers = _context.Customers
+      .Include(c => c.City)
+      .ThenInclude(city => city.Country)
+      .ToList();
+
+            return View(customers);
+
         }
         [HttpGet]
         public IActionResult Create()
@@ -38,13 +42,23 @@ namespace ulesanne1605_poko.Controllers
         [HttpPost]
         public IActionResult Create(Customer customer)
         {
-            string iniqueFileName = GetProfilePhotoFileName(customer);
-            customer.PhotoUrl = iniqueFileName;
-            
+            string uniqueFileName = GetProfilePhotoFileName(customer);
+
+            if (string.IsNullOrEmpty(uniqueFileName))
+            {
+                
+                customer.PhotoUrl = "noimage.png";
+            }
+            else
+            {
+                customer.PhotoUrl = uniqueFileName;
+            }
+
             _context.Add(customer);
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
+
 
         [HttpGet]
         public IActionResult Details(int Id)
@@ -61,7 +75,7 @@ namespace ulesanne1605_poko.Controllers
         [HttpGet]
         public IActionResult Edit(int Id)
         {
-          
+
 
             Customer customer = _context.Customers
             .Include(co => co.City)
@@ -96,9 +110,19 @@ namespace ulesanne1605_poko.Controllers
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            var customer = _context.Customers.Where(c => c.Id == id).FirstOrDefault();
+            var customer = _context.Customers
+                .Include(c => c.City)
+                .ThenInclude(city => city.Country)
+                .FirstOrDefault(c => c.Id == id);
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
             return View(customer);
         }
+
 
         [ValidateAntiForgeryToken]
         [HttpPost]
