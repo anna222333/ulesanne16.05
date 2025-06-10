@@ -48,15 +48,12 @@
             <div class="col-md-12 btn-group pb-2">
                 <div class="form-group col-4 p-0">
                     <label asp-for="ProfilePhoto" class="control-label"></label>
-                <div class="form-group col-4 p-0">
-                    <label asp-for="ProfilePhoto" class="control-label"></label>
                     <img id="PreviewPhoto"
                          src="@(string.IsNullOrEmpty(Model.PhotoUrl) ? Url.Content("~/images/noimage.png") : Url.Content("~/images/" + Model.PhotoUrl))"
                          alt="Customer Photo"
                          width="125" height="125" />
                     <span asp-validation-for="PhotoUrl" class="text-danger"></span>
-                </div>
-                    <span asp-validation-for="PhotoUrl" class="text-danger"></span>
+                
                 </div>
                 <div class="col-1 p-0">
                  

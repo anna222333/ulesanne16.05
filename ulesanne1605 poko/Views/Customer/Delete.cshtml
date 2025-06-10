@@ -1,7 +1,7 @@
 ﻿@model Customer
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Delete";
 
 }
 
@@ -13,7 +13,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Delete" enctype="multipart/form-data">
+        <form asp-action="Delete" method="post">
             <input type="hidden" asp-for ="Id"/>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -31,35 +31,34 @@
             <input asp-for="EmailId" class="form-control form-control-plaintext" readonly />
              
             </div>
+<div class="form-group">
+    <label class="control-label">Country</label>
+    <input class="form-control form-control-plaintext" readonly 
+           value="@Model.City?.Country?.Name" />
+</div>
 
-            <div class="form-group">
-                <label asp-for="CountryId" class="control-label"></label>
-            <input asp-for="@Model.City.Country.Name" class="form-control form-control-plaintext" readonly />
-            </div>
-            <div class="form-group">
-                <label asp-for="CityId" class="control-label"></label>
-            <input asp-for="@Model.City.Name" class="form-control form-control-plaintext" readonly />
-            </div>
+<div class="form-group">
+    <label class="control-label">City</label>
+    <input class="form-control form-control-plaintext" readonly 
+           value="@Model.City?.Name" />
+</div>
 
-           
 
 
 
             <div class="col-md-12 btn-group pb-2">
                 <div class="form-group col-4 p-0">
                     <label asp-for="ProfilePhoto" class="control-label"></label>
-                <div class="form-group col-4 p-0">
-                    <label asp-for="ProfilePhoto" class="control-label"></label>
+               
                     <img id="PreviewPhoto"
                          src="@(string.IsNullOrEmpty(Model.PhotoUrl) ? Url.Content("~/images/noimage.png") : Url.Content("~/images/" + Model.PhotoUrl))"
                          alt="Customer Photo"
                          width="125" height="125" />
                     <span asp-validation-for="PhotoUrl" class="text-danger"></span>
-                </div>
-                    <span asp-validation-for="PhotoUrl" class="text-danger"></span>
+               
                 </div>
                 <div class="col-1 p-0">
-                    <!-- Пустой div для отступа или выравнивания -->
+                   
                 </div>
                
             </div>
@@ -71,7 +70,7 @@
 
             <div class="form-group pt-0 mt-0">
                 <div ID="HiddenDiv" style="visibility: hidden;">
-                    <input asp-for="PhotoUrl" id="PhotoUrl" value="" />
+                    <input asp-for="PhotoUrl" id="PhotoUrl"/>
                 </div>
             </div>
 
@@ -88,13 +87,19 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 
     <script type="text/javascript">
-       
-
-
-
+    document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector('form[action$="/Customer/Delete"]');
+            if (form) {
+                form.addEventListener("submit", function (e) {
+                    if (!confirm("Are you sure you want to delete a customer?")) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
     </script>
-
 }
+

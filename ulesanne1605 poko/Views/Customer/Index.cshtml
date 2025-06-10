@@ -1,5 +1,14 @@
 ﻿@model IEnumerable<Customer>
 
+    <style>
+    .profile-pic {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+</style>
+
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -39,11 +48,17 @@
             </td>
                 
             <td>
-                @Html.DisplayFor(modelItem => item.City.Code)
+               @Html.DisplayFor(modelItem => item.City.Name)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PhotoUrl)
-            </td>
+    <td>
+    <img src="@Url.Content("~/images/" + item.PhotoUrl)"
+         alt="Photo"
+         class="rounded-circle"
+         style="width: 60px; height: 60px; object-fit: cover;" />
+</td>
+
+
+
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
